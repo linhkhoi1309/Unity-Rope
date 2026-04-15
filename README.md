@@ -84,8 +84,6 @@ A joint that allows a Rigidbody2D to rotate around a point, like a hinge.
    - Disable **Auto Configure Connected Anchor** (for Segment_0)
 5. Attach **Segment_0** to an **Anchor object** (same position)
 
----
-
 #### Pros
 - Easy to set up  
 - Little to no coding required  
@@ -113,8 +111,6 @@ A joint that allows a Rigidbody2D to rotate around a point, like a hinge.
 6. Tune parameters:
    - Rigidbody mass  
    - Joint angle limits  
-
----
 
 #### Pros
 - Smoother visual deformation  
