@@ -33,6 +33,19 @@ public class VerletRope : MonoBehaviour
     [Tooltip("Enable collision detection for the rope segments")]
     [SerializeField] private bool m_enableCollision = false;
 
+    [Tooltip("Radius for collision detection of rope segments")]
+    [SerializeField] private float m_collisionRadius = 0.1f;
+
+    [Tooltip("Layer mask for collision detection")]
+    [SerializeField] private LayerMask m_collisionLayerMask;
+
+    [Tooltip("Bounce factor for rope collisions (0 to 1)")]
+    [SerializeField] private float m_bounceFactor = 0.1f;
+
+    [Tooltip("Interval (in segments) for performing collision checks to optimize performance")]
+    [SerializeField] private float m_segmentCollisionInterval = 2;
+
+
     private LineRenderer m_lineRenderer;
     private List<RopeSegment> m_ropeSegments = new List<RopeSegment>();
     private Vector3 m_ropeStartPoint;
@@ -68,6 +81,10 @@ public class VerletRope : MonoBehaviour
         for (int i = 0; i < m_numOfIterations; i++)
         {
             ApplyConstraints();
+            if (m_enableCollision && i % m_segmentCollisionInterval == 0)
+            {
+                HandleCollisions();
+            }
         }
     }
 
@@ -132,5 +149,35 @@ public class VerletRope : MonoBehaviour
             ropePositions[i] = m_ropeSegments[i].CurrentPos;
         }
         m_lineRenderer.SetPositions(ropePositions);
+    }
+
+    void HandleCollisions()
+    {
+        for (int i = 1; i < m_ropeSegments.Count; i++)
+        {
+            RopeSegment segment = m_ropeSegments[i];
+            Vector2 velocity = segment.CurrentPos - segment.PreviousPos;
+            Collider2D[] colliders = Physics2D.OverlapCircleAll(segment.CurrentPos, m_collisionRadius, m_collisionLayerMask);
+            foreach (Collider2D collider in colliders)
+            {
+                Vector2 closestPoint = collider.ClosestPoint(segment.CurrentPos);
+                float distance = Vector2.Distance(segment.CurrentPos, closestPoint);
+                if (distance < m_collisionRadius)
+                {
+                    Vector2 collisionNormal = (segment.CurrentPos - closestPoint).normalized;
+                    if (collisionNormal == Vector2.zero)
+                    {
+                        collisionNormal = (segment.CurrentPos - (Vector2)collider.transform.position).normalized;
+                    }
+
+                    float depth = m_collisionRadius - distance;
+                    segment.CurrentPos += collisionNormal * depth; // Move segment out of collision based on collision normal and penetration depth
+                    velocity = Vector2.Reflect(velocity, collisionNormal) * m_bounceFactor; // Reflect velocity based on collision normal and bounce factor
+                }
+            }
+
+            segment.PreviousPos = segment.CurrentPos - velocity; // Update previous position based on new velocity after collision response
+            m_ropeSegments[i] = segment;
+        }
     }
 }
