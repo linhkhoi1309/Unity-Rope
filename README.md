@@ -7,52 +7,135 @@ This repository is served as a sandbox to explore all approaches to make 2D rope
 
 ## Hinge Joint 2D
 
-- Enable Collision: should rigid bodies connected with this joint collide
-- Connected Rigid Body (Rigidbody 2D):
-    + if unassigned, the object will act as a swing when colliding with other objects.
+A joint that allows a Rigidbody2D to rotate around a point, like a hinge.
 
-- Auto Configure Connected Anchor 
-- Anchor (X, Y): the point that the sprite will rotate around relative to the sprite in local space, doesn't need to be within bounds of the sprite
-- Connected Anchor (X, Y)
-- Use Motor
-    + Motor Speed (degree/second, can be negative): target angular speed that the motor try to reach
-    + Maximum Motor Force: the maximum force the motor can use to achieve the desired motor target speed
-- Use Limits
-- Angle Limits:
-    + Lower Angle
-    + Upper Angle
+
+### Collision
+
+- Enable Collision  
+  - Allows connected bodies to collide with each other  
+  - Usually disabled for stability  
+
+### Connected Body
+
+- Connected Rigidbody 2D  
+  - The object this joint is attached to  
+  - If null → attaches to the world (fixed point)  
+  - Useful for pendulum/swing behavior  
+
+### Anchor Settings
+
+- Anchor (X, Y)  
+  - Pivot point on this object (local space)  
+  - Defines where rotation happens  
+  - Can be outside the sprite  
+
+- Connected Anchor (X, Y)  
+  - Pivot point on the connected body (or world)  
+
+- Auto Configure Connected Anchor  
+  - Automatically aligns anchors  
+  - Disable for manual control  
+
+### Motor
+
+- Use Motor  
+  - Enables automatic rotation  
+
+- Motor Speed  
+  - Target angular speed (degrees/second)  
+  - Can be positive or negative  
+
+- Maximum Motor Force  
+  - Max torque applied to reach target speed  
+  - Higher value → stronger motor  
+
+### Limits
+
+- Use Limits  
+  - Restrict rotation angle  
+
+- Lower Angle  
+  - Minimum allowed rotation  
+
+- Upper Angle  
+  - Maximum allowed rotation  
+
+### Notes
+
+- Common use cases:
+  - Door hinge  
+  - Swing  
+  - Rotating mechanism  
+
+- Combine:
+  - Motor + Limits → controlled rotation  
 
 ## Hinge Joint 2D with Ropes / Chains
 
-### First approach:
+### First Approach: Segment-Based Rope
 
-1. Create a Rope game object 
-2. Create a list of node or segment game objects and place it inside the Rope 
-3. Assign Hinge Joint 2D component for each segment object.
-4. Assign the connected rigidbody (in Hinge Joint 2D component) for each its upper segment consecutively (turn off Auto Configure Connected Anchor for the Segment_0)
-5. Segment_0 assign with an Anchor object (Anchor object is a Segment object has the same position with the Segment_0)
+#### Setup
+1. Create a **Rope** GameObject  
+2. Create multiple **segment (node) GameObjects** as children  
+3. Add **Hinge Joint 2D** to each segment  
+4. For each segment:
+   - Connect it to the **previous (upper) segment**
+   - Disable **Auto Configure Connected Anchor** (for Segment_0)
+5. Attach **Segment_0** to an **Anchor object** (same position)
 
-#### Pros:
-- Easy to setup
-- No code or almost no code
-#### Cons:
-- Rope physics effect is not as good as second and Verlet Intergration approach
-- When stretching out too much, weird effects might happen.
-- Collision detection is acceptable but not as good as Verlet Integration approach
-
-### Second approach:
-1. Rigging: Sprite Editor -> Skinning Editor -> Create Bones -> Auto Geometry -> Generate For Selected
-2. Create a Rope game object 
-3. Assign Sprite Skin component -> Create bones -> Assign Hinge Joint 2D component for each children bone object -> Assign the connected rigidbody (in Hinge Joint 2D component) for each its upper bone consecutively (turn off Auto Configure Connected Anchor for the Bone_0) -> Bone_0 assign with an Anchor object (Anchor object is like a Bone object has the same position with the Bone_0)
-4. Tuning for better effect (Rigidbody's mass, Hinge Joint 2D's Angle limits) 
-
-#### Pros:
-- Smoother rope physics effects
-- No code or almost no code
-#### Cons:
-- Weird collision detection -> Not recommended to use
-- Harder to setup & configure
 ---
+
+#### Pros
+- Easy to set up  
+- Little to no coding required  
+
+#### Cons
+- Less realistic rope behavior  
+- Can stretch and become unstable  
+- Collision is acceptable but not very accurate  
+
+---
+
+### Second Approach: Bone-Based Rope (2D Rigging)
+
+#### Setup
+1. Rig sprite:
+   - Sprite Editor → Skinning Editor  
+   - Create Bones → Auto Geometry → Generate  
+2. Create a **Rope** GameObject  
+3. Add **Sprite Skin** component  
+4. For each bone:
+   - Add **Hinge Joint 2D**
+   - Connect to the **previous (upper) bone**
+   - Disable **Auto Configure Connected Anchor** (for Bone_0)
+5. Attach **Bone_0** to an **Anchor object** (same position)  
+6. Tune parameters:
+   - Rigidbody mass  
+   - Joint angle limits  
+
+---
+
+#### Pros
+- Smoother visual deformation  
+- More natural-looking rope  
+
+#### Cons
+- Poor / unstable collision handling  
+- More complex setup  
+- Not recommended for physics-heavy interactions  
+
+---
+
+### Summary
+
+- **Segment-based approach**  
+  - Simple, decent physics, easier to control  
+
+- **Bone-based approach**  
+  - Better visuals, worse collision, more complex  
+
+- For realistic physics → prefer **Verlet / PBD approach**
 ## Verlet Integration + Position-based Dynamics with Ropes
 
 ### Verlet Integration Overview
@@ -186,7 +269,7 @@ $$
 x_{prev} = x_{current} - velocity
 $$
 
-### Step 7: Render rope
+#### Step 7: Render rope
 - Draw segments using LineRenderer  
 
 ## References
