@@ -268,9 +268,34 @@ $$
 #### Step 7: Render rope
 - Draw segments using LineRenderer  
 
+### Optimizations
+
+#### Questions
+
+- Why using the CollisionInfo class?
+
+  → Using a reference to the Collider2D is much slower (~2x), probably due to its large size and scattered pointers, both of which are terrible for cache performance.
+
+- Why not using built-in LineRenderer component but creating a Mesh for rendering ropes
+  - **Limited visual quality**
+    - Can produce jagged or inconsistent thickness
+    - Hard to achieve smooth, high-quality rope appearance  
+
+  - **Less control**
+    - Limited control over vertices and geometry  
+    - Difficult to customize shape (caps, width variation, bending)
+
+  - **Artifacts / glitches**
+    - May show visual artifacts when rope bends sharply  
+    - Can look unstable in dynamic simulations  
+
+  - **Performance limitations**
+    - Not optimized for large numbers of segments in complex cases  
+
 ## References
 
 - [Hinge Joint 2D - Official Unity Tutorial, Unity](https://www.youtube.com/watch?v=l6awvCT29yU)
 - [Creating Rope Objects with Physics | Unity Tutorial, Sasquatch B Studios](https://www.youtube.com/watch?v=iGlD3f-5JpA&list=PLfmYNuLHEy-PQ6j6kki9kmM3Z5CayRSI0) 
 - [Make a custom rope (with collisions) using VERLET Integration (Unity Tutorial), Sasquatch B Studios](https://www.youtube.com/watch?v=bxG3XP4MVzk&list=PLfmYNuLHEy-PQ6j6kki9kmM3Z5CayRSI0)
 - [Verlet Rope in Games, Michael Palmos](https://toqoz.fyi/game-rope.html)
+- [Advanced Character Physics, Thomas Jakobsen](https://graphics.cs.cmu.edu/nsp/course/15-869/2006/papers/jakobsen.htm)
