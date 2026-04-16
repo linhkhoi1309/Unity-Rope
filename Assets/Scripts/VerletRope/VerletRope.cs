@@ -28,6 +28,9 @@ public class VerletRope : MonoBehaviour
     [Tooltip("Number of iterations for constraint solving")]
     [SerializeField] private int m_numOfIterations = 50;
 
+    [Tooltip("Number of sub-steps for physics simulation to improve stability")]
+    [SerializeField] private int m_numOfSubSteps = 2;
+
     [Header("Rope Collision")]
 
     [Tooltip("Enable collision detection for the rope segments")]
@@ -77,13 +80,16 @@ public class VerletRope : MonoBehaviour
 
     void FixedUpdate()
     {
-        SimulateRope();
-        for (int i = 0; i < m_numOfIterations; i++)
+        for (int i = 0; i < m_numOfSubSteps; i++)
         {
-            ApplyConstraints();
-            if (m_enableCollision && i % m_segmentCollisionInterval == 0)
+            SimulateRope();
+            for (int j = 0; j < m_numOfIterations; j++)
             {
-                HandleCollisions();
+                ApplyConstraints();
+                if (m_enableCollision && j % m_segmentCollisionInterval == 0)
+                {
+                    HandleCollisions();
+                }
             }
         }
     }
